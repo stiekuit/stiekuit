@@ -30,4 +30,3 @@ touch "$projectFile"
 //mkdir -p /path/to/folder1 /path/to/folder2 /path/to/folder3
 //mkdir -p /path/to/folder1 /path/to/folder2 /path/to/folder3 /path/to/folder4
 
-//Added nothing really
