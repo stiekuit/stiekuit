@@ -1,3 +1,8 @@
+# MyChatApp/chat_app.py
+from flask import Flask, render_template, request
+
+app = Flask(__name__)
+
 def simple_chatbot(user_input):
     user_input = user_input.lower()
     
@@ -10,17 +15,13 @@ def simple_chatbot(user_input):
     else:
         return "I'm sorry, I don't understand that."
 
-def main():
-    print("Simple Chatbot: Hello! Type 'bye' to exit.")
-    
-    while True:
-        user_input = input("You: ")
-        if user_input.lower() == 'bye':
-            print("Simple Chatbot: Goodbye!")
-            break
-        else:
-            response = simple_chatbot(user_input)
-            print("Simple Chatbot:", response)
+@app.route("/", methods=["GET", "POST"])
+def chat():
+    if request.method == "POST":
+        user_input = request.form.get("user_input")
+        response = simple_chatbot(user_input)
+        return render_template("index.html", user_input=user_input, response=response)
+    return render_template("index.html", user_input="", response="")
 
 if __name__ == "__main__":
-    main()
+    app.run(debug=True)
