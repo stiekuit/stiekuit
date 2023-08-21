@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #chatbox {
+            width: 300px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="chatbox">
+        <div id="chat-log"></div>
+        <input type="text" id="user-input" placeholder="Type your message...">
+        <button id="send-button">Send</button>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const chatLog = document.getElementById("chat-log");
+            const userInput = document.getElementById("user-input");
+            const sendButton = document.getElementById("send-button");
+            
+            sendButton.addEventListener("click", function() {
+                const userMessage = userInput.value;
+                if (userMessage.trim() === "") {
+                    return;
+                }
+                displayMessage("You: " + userMessage);
+                
+                fetch("/get_response", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ user_input: userMessage })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const botResponse = data.response;
+                    displayMessage("Chatbot: " + botResponse);
+                });
+                
+                userInput.value = "";
+            });
+            
+            function displayMessage(message) {
+                const messageElement = document.createElement("p");
+                messageElement.textContent = message;
+                chatLog.appendChild(messageElement);
+            }
+        });
+    </script>
+</body>
+</html>
