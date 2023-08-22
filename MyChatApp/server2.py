@@ -5,8 +5,8 @@ import gradio as gr
 import openai
 
 # Set your OpenAI API key
-OPENAI_API_KEY = "your_openai_api_key_here"
-openai.api_key = OPENAI_API_KEY
+OPENAI_API_KEY = "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"
+openai.api_key = "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"
 
 # Define the chatbot function
 def openai_chatbot(user_input):
