@@ -1,42 +1,60 @@
 import logging
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, render_template, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 import re
+import long_responses as long
+import openai
+from openai.error import RateLimitError, InvalidRequestError, AuthenticationError
+from api_secrets import OPENAI_API_KEY
+from flask_migrate import Migrate
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'  # Use SQLite for simplicity
+app.config['SECRET_KEY'] = '230cfd33beee0ce2e1f0078736c6a4e0'  # Change this to a secure random key
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
-# Configure logging to write to a file
-logging.basicConfig(filename='chat_app.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+openai.api_key = OPENAI_API_KEY
 
-# Dummy class for long responses
-class LongResponses:
-    def unknown(self):
-        return "Sorry, I didn't understand that."
+unanswered_count = 0
+MAX_UNANSWERED_COUNT = 3
 
-    # Add your long responses here
-    R_ADVICE = "Sure, here's some advice: ..."
-    R_EATING = "I don't eat, but I can suggest some recipes!"
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
 
-long = LongResponses()
+def create_user(username, password):
+    hashed_password = generate_password_hash(password, method='sha256')
+    new_user = User(username=username, password_hash=hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
+
+def check_user_credentials(username, password):
+    user = User.query.filter_by(username=username).first()
+    if user and check_password_hash(user.password_hash, password):
+        return True
+    return False
 
 def message_probability(user_message, recognised_words, single_response=False, required_words=[]):
     message_certainty = 0
     has_required_words = True
 
-    # Counts how many words are present in each predefined message
     for word in user_message:
         if word in recognised_words:
             message_certainty += 1
 
-    # Calculates the percent of recognised words in a user message
     percentage = float(message_certainty) / float(len(recognised_words))
 
-    # Checks that the required words are in the string
     for word in required_words:
         if word not in user_message:
             has_required_words = False
             break
 
-    # Must either have the required words, or be a single response
     if has_required_words or single_response:
         return int(percentage * 100)
     else:
@@ -59,9 +77,37 @@ def check_all_messages(message):
     response(long.R_ADVICE, ['give', 'advice'], required_words=['advice'])
     response(long.R_EATING, ['what', 'you', 'eat'], required_words=['you', 'eat'])
 
+    if not highest_prob_list:
+        # No recognized words or none of the predefined responses matched
+        return long.unknown()
+
     best_match = max(highest_prob_list, key=highest_prob_list.get)
 
-    return long.unknown() if highest_prob_list[best_match] < 1 else best_match
+    global unanswered_count
+
+    if highest_prob_list[best_match] < 1:
+        unanswered_count += 1
+        if unanswered_count >= MAX_UNANSWERED_COUNT:
+            return openai_chatbot(' '.join(message))
+    else:
+        unanswered_count = 0
+
+    return best_match
+
+def openai_chatbot(user_input):
+    try:
+        response = openai.Completion.create(
+            engine="gpt-3.5-turbo-instruct",
+            prompt=user_input,
+            max_tokens=50
+        )
+        return response.choices[0].text.strip()
+    except RateLimitError as e:
+        return str(e)
+    except InvalidRequestError as e:
+        return str(e)
+    except AuthenticationError as e:
+        return str(e)
 
 @app.route("/", methods=["GET", "POST"])
 def chat():
@@ -71,23 +117,34 @@ def chat():
         return jsonify({"response": response})
     return render_template("chat.html", user_input="", response="")
 
-@app.route('/record-request', methods=['POST'])
-def record_request():
-    try:
-        data = request.get_json()
-        sender = data['sender']
-        responder = data['responder']
+@app.route("/register", methods=["POST"])
+def register():
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
 
-        # Your record request logic here
+    if not username or not password:
+        return jsonify({"message": "Invalid registration data"}), 400
 
-        # Log the recorded request at the debug level
-        logging.debug(f"Request recorded - Sender: {sender}, Responder: {responder}")
+    if User.query.filter_by(username=username).first():
+        return jsonify({"message": "Username already exists"}), 400
 
-        return jsonify({"message": "Request recorded successfully"}), 200
-    except Exception as e:
-        # Log errors at the error level
-        logging.error(f"Error recording request: {str(e)}")
-        return jsonify({"message": "Error recording request"}), 500
+    create_user(username, password)
+    return jsonify({"message": "Registration successful"})
 
-if __name__ == '__main__':
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+
+    if not username or not password:
+        return jsonify({"message": "Invalid login data"}), 400
+
+    if check_user_credentials(username, password):
+        return jsonify({"message": "Login successful"})
+    else:
+        return jsonify({"message": "Invalid username or password"}), 401
+
+if __name__ == "__main__":
     app.run(debug=True)

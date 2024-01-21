@@ -31,3 +31,11 @@
 2024-01-20 20:04:55,882 - INFO - 127.0.0.1 - - [20/Jan/2024 20:04:55] "POST / HTTP/1.1" 200 -
 2024-01-20 20:04:56,394 - INFO - 127.0.0.1 - - [20/Jan/2024 20:04:56] "POST / HTTP/1.1" 200 -
 2024-01-20 20:04:57,121 - INFO - 127.0.0.1 - - [20/Jan/2024 20:04:57] "POST / HTTP/1.1" 200 -
+2024-01-20 20:08:19,085 - INFO -  * Detected change in '/root/datadumpworld/MyChatApp/manage.py', reloading
+2024-01-20 20:08:19,179 - INFO -  * Restarting with stat
+2024-01-20 20:08:19,622 - WARNING -  * Debugger is active!
+2024-01-20 20:08:19,623 - INFO -  * Debugger PIN: 886-388-976
+2024-01-20 20:09:43,744 - INFO - 127.0.0.1 - - [20/Jan/2024 20:09:43] "[33mGET /registration HTTP/1.1[0m" 404 -
+2024-01-20 20:09:43,971 - INFO - 127.0.0.1 - - [20/Jan/2024 20:09:43] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2024-01-20 20:17:28,602 - INFO -  * Detected change in '/root/datadumpworld/MyChatApp/chat_app2.py', reloading
+2024-01-20 20:17:28,784 - INFO -  * Restarting with stat
