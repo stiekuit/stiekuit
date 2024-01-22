@@ -53,20 +53,21 @@
         <button id="send-button" onclick="sendMessage()">Send</button>
     </div>
 
+    <a href="{{ url_for('logs') }}">View Logs</a>
+
     <script>
         function sendMessage() {
             var user_input = document.getElementById("user-input").value;
             displayMessage("You: " + user_input);
-            
+
             // Make a POST request to your Flask endpoint with the user input
             fetch("/", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ "user_input": user_input })
-})
-
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ "user_input": user_input })
+            })
             .then(response => response.json())
             .then(data => displayMessage("Bot: " + data.response));
 

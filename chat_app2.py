@@ -9,6 +9,9 @@ from openai.error import RateLimitError, InvalidRequestError, AuthenticationErro
 from api_secrets import OPENAI_API_KEY
 from flask_migrate import Migrate
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from pymongo import MongoClient
+from datetime import datetime
+from flask_pymongo import PyMongo
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'  # Use SQLite for simplicity
@@ -20,6 +23,10 @@ login_manager.login_view = 'login'
 
 openai.api_key = OPENAI_API_KEY
 
+# Connect to MongoDB
+app.config['MONGO_URI'] = 'mongodb+srv://romanobrookswork:Miy3kvcUxwlKvQKx@cluster0.2ilgwz7.mongodb.net/cluster0'
+mongo = PyMongo(app)
+
 unanswered_count = 0
 MAX_UNANSWERED_COUNT = 3
 
@@ -27,6 +34,10 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 def create_user(username, password):
     hashed_password = generate_password_hash(password, method='sha256')
@@ -37,8 +48,7 @@ def create_user(username, password):
 def check_user_credentials(username, password):
     user = User.query.filter_by(username=username).first()
     if user and check_password_hash(user.password_hash, password):
-        return True
-    return False
+        return user
 
 def message_probability(user_message, recognised_words, single_response=False, required_words=[]):
     message_certainty = 0
@@ -109,11 +119,31 @@ def openai_chatbot(user_input):
     except AuthenticationError as e:
         return str(e)
 
+def log_to_mongo(sender, message, responder, response):
+    timestamp = datetime.utcnow()
+    log_entry = {
+        'timestamp': timestamp,
+        'sender': sender,
+        'message': message,
+        'responder': responder,
+        'response': response
+    }
+    # Access the 'logs' collection in the MongoDB database
+    mongo_collection = mongo.db.logs
+    # Insert the log entry into the MongoDB collection
+    mongo_collection.insert_one(log_entry)
+
 @app.route("/", methods=["GET", "POST"])
 def chat():
     if request.method == "POST":
         user_input = request.json.get("user_input")
         response = check_all_messages(re.split(r'\s+|[,;?!.-]\s*', user_input.lower()))
+
+        # Log the conversation to MongoDB
+        sender = 'user'
+        responder = 'bot'
+        log_to_mongo(sender, user_input, responder, response)
+
         return jsonify({"response": response})
     return render_template("chat.html", user_input="", response="")
 
@@ -134,17 +164,38 @@ def register():
 
 @app.route("/login", methods=["POST"])
 def login():
-    data = request.json
-    username = data.get("username")
-    password = data.get("password")
+    if request.method == "POST":
+        data = request.json
+        username = data.get("username")
+        password = data.get("password")
 
-    if not username or not password:
-        return jsonify({"message": "Invalid login data"}), 400
+        if not username or not password:
+            return jsonify({"message": "Invalid login data"}), 400
 
-    if check_user_credentials(username, password):
-        return jsonify({"message": "Login successful"})
-    else:
-        return jsonify({"message": "Invalid username or password"}), 401
+        user = check_user_credentials(username, password)
+        if user:
+            login_user(user)
+            return jsonify({"message": "Login successful"})
+        else:
+            return jsonify({"message": "Invalid username or password"}), 401
+
+# Endpoint to display logs
+@app.route("/logs")
+def logs():
+    # Access the 'logs' collection in the MongoDB database
+    mongo_collection = mongo.db.logs
+    # Fetch all logs from the collection
+    logs = mongo_collection.find()
+
+    # Aggregate message counts for each sender and responder
+    pipeline = [
+        {"$group": {"_id": "$sender", "sender_count": {"$sum": 1}, "responder": {"$first": "$responder"}}},
+        {"$project": {"_id": 0, "sender": "$_id", "sender_count": 1, "responder": 1}},
+        {"$sort": {"sender_count": -1}}
+    ]
+    message_counts = list(mongo_collection.aggregate(pipeline))
+
+    return render_template("logs.html", logs=logs, message_counts=message_counts)
 
 if __name__ == "__main__":
     app.run(debug=True)

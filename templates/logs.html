@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Logs</title>
+</head>
+<body>
+    <h1>All Messages</h1>
+    <table border="1">
+        <tr>
+            <th>Timestamp</th>
+            <th>Sender</th>
+            <th>Message</th>
+            <th>Responder</th>
+            <th>Response</th>
+        </tr>
+        {% for log in logs %}
+            <tr>
+                <td>{{ log.timestamp }}</td>
+                <td>{{ log.sender }}</td>
+                <td>{{ log.message }}</td>
+                <td>{{ log.responder }}</td>
+                <td>{{ log.response }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <h1>Message Counts</h1>
+    <table border="1">
+        <tr>
+            <th>Sender</th>
+            <th>Message Count</th>
+            <th>Responder</th>
+            <th>Message Count</th>
+        </tr>
+        {% for count in message_counts %}
+            <tr>
+                <td>{{ count.sender }}</td>
+                <td>{{ count.sender_count }}</td>
+                <td>{{ count.responder }}</td>
+                <td>{{ count.responder_count }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

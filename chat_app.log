@@ -39,3 +39,34 @@
 2024-01-20 20:09:43,971 - INFO - 127.0.0.1 - - [20/Jan/2024 20:09:43] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
 2024-01-20 20:17:28,602 - INFO -  * Detected change in '/root/datadumpworld/MyChatApp/chat_app2.py', reloading
 2024-01-20 20:17:28,784 - INFO -  * Restarting with stat
+2024-01-21 10:16:23,877 - WARNING -  * Debugger is active!
+2024-01-21 10:16:23,879 - INFO -  * Debugger PIN: 886-388-976
+2024-01-21 10:16:36,205 - INFO - User: Hi
+2024-01-21 10:16:36,206 - INFO - Bot: Hello!
+2024-01-21 10:16:36,207 - INFO - 127.0.0.1 - - [21/Jan/2024 10:16:36] "POST / HTTP/1.1" 200 -
+2024-01-21 10:16:41,372 - INFO - User: 
+2024-01-21 10:16:41,373 - INFO - Bot: Hello!
+2024-01-21 10:16:41,373 - INFO - 127.0.0.1 - - [21/Jan/2024 10:16:41] "POST / HTTP/1.1" 200 -
+2024-01-21 10:16:46,787 - INFO - User: what are you doing?
+2024-01-21 10:16:46,787 - INFO - Bot: Hello!
+2024-01-21 10:16:46,788 - INFO - 127.0.0.1 - - [21/Jan/2024 10:16:46] "POST / HTTP/1.1" 200 -
+2024-01-21 10:16:55,653 - INFO - User: You responding with Hello alot
+2024-01-21 10:16:55,653 - INFO - Bot: Hello!
+2024-01-21 10:16:55,654 - INFO - 127.0.0.1 - - [21/Jan/2024 10:16:55] "POST / HTTP/1.1" 200 -
+2024-01-21 10:17:03,654 - INFO - User: Nevermind
+2024-01-21 10:17:03,654 - INFO - Bot: Hello!
+2024-01-21 10:17:03,655 - INFO - 127.0.0.1 - - [21/Jan/2024 10:17:03] "POST / HTTP/1.1" 200 -
+2024-01-21 10:17:06,717 - INFO - User: no
+2024-01-21 10:17:06,717 - INFO - Bot: Hello!
+2024-01-21 10:17:06,719 - INFO - 127.0.0.1 - - [21/Jan/2024 10:17:06] "POST / HTTP/1.1" 200 -
+2024-01-21 10:17:09,256 - INFO - User: no
+2024-01-21 10:17:09,259 - DEBUG - message='Request to OpenAI API' method=post path=https://api.openai.com/v1/engines/gpt-3.5-turbo-instruct/completions
+2024-01-21 10:17:09,259 - DEBUG - api_version=None data='{"prompt": "no", "max_tokens": 50}' message='Post details'
+2024-01-21 10:17:09,260 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2024-01-21 10:17:09,261 - DEBUG - Starting new HTTPS connection (1): api.openai.com:443
+2024-01-21 10:17:09,690 - DEBUG - https://api.openai.com:443 "POST /v1/engines/gpt-3.5-turbo-instruct/completions HTTP/1.1" 429 337
+2024-01-21 10:17:09,692 - DEBUG - message='OpenAI API response' path=https://api.openai.com/v1/engines/gpt-3.5-turbo-instruct/completions processing_ms=None request_id=0aa37ddb48275da424df6b1e95f8ea07 response_code=429
+2024-01-21 10:17:09,692 - INFO - error_code=insufficient_quota error_message='You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.' error_param=None error_type=insufficient_quota message='OpenAI API error received' stream_error=False
+2024-01-21 10:17:09,692 - INFO - Bot: You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.
+2024-01-21 10:17:09,693 - INFO - 127.0.0.1 - - [21/Jan/2024 10:17:09] "POST / HTTP/1.1" 200 -
+2024-01-21 13:54:13,404 - INFO -  * Detected change in '/root/datadumpworld/MyChatApp/chat_app2.py', reloading
